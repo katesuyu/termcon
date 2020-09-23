@@ -32,5 +32,6 @@ please feel free to file an issue describing the problem(s) and/or any proposed 
 
 == License
 
+With the exception of files specifically marked under a different license,
 Termcon is licensed under the {bsd0-license}[BSD 0-Clause License].
 Contributions to this project are welcome, but must be licensed under the BSD 0-Clause License unless explicitly stated otherwise.

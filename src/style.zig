@@ -47,8 +47,10 @@ pub const Color = union(enum) {
 /// Use at your own risk, and prefer extended or RGB color as some attributes
 /// may change the displayed color for basic 4-bit color.
 pub const Attributes = struct {
+    dim: bool = false,
     bold: bool = false,
     italic: bool = false,
+    reverse: bool = false,
     underline: bool = false,
     blinking: bool = false,
 };
