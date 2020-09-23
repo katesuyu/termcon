@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: 0BSD
+
+= Termcon
+:bsd0-license: https://github.com/katesuyu/termcon/blob/dev/LICENSE
+
+Cross-platform terminal manipulation library written in Zig.
+
+NOTE: This project is very incomplete and has no usable API at the moment.
+It is published in its current form solely for reference purposes.
+
+== Design
+
+Termcon aims to be cross-platform and reusable.
+As such, the project has certain goals and non-goals.
+
+Goals::
+    * Easily color and style text
+    * Control cursor position and cursor type
+    * Support raw mode and alternate screens
+    * Detect features at runtime and adapt as needed
+    * Optimize sequential operations at comptime
+    * Make event handling painless
+
+Non-goals::
+    * Track buffer state except as strictly required
+    * Make the API higher level at the cost of composability
+    * Implement features that require heap allocation
+
+If any part of the design of Termcon introduces overhead,
+or otherwise inhibits inclusion in a larger work,
+please feel free to file an issue describing the problem(s) and/or any proposed solutions.
+
+== License
+
+Termcon is licensed under the {bsd0-license}[BSD 0-Clause License].
+Contributions to this project are welcome, but must be licensed under the BSD 0-Clause License unless explicitly stated otherwise.
