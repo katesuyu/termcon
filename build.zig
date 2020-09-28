@@ -7,7 +7,7 @@ pub fn build(b: *Builder) void {
     b.top_level_steps.shrinkRetainingCapacity(0);
 
     const test_filter = b.option([]const u8, "test-filter", "Filter the tests to be run.");
-    const main_tests = b.addTest("src/termcon.zig");
+    const main_tests = b.addTest("src/tests.zig");
     main_tests.setFilter(test_filter);
     main_tests.setBuildMode(mode);
 

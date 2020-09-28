@@ -15,28 +15,60 @@ const c = @cImport({
 /// Use libc termios where possible because BSD and Darwin targets do not
 /// have a stable syscall interface. On Linux, `std.os` has a syscall-based
 /// Termios implementation that we use instead.
-pub const Termios = if (std.builtin.link_libc) c.termios else std.os.termios;
+pub const Termios = if (std.os.builtin.tag == .linux) std.os.termios else c.termios;
 
 /// Get the current Termios struct for the given file descriptor.
 /// This variant also checks whether the fd is a tty.
-pub fn tcgetattrInit(self: *PosixTty) PosixTty.InitError!void {
-    if (std.builtin.link_libc) while (true) {
-        const errno = std.os.errno(c.tcgetattr(self.tty.handle, &self.old_settings));
-        switch (errno) {
-            0 => return,
+pub fn tcgetattrInit(self: *PosixTty) PosixTty.InitError!Termios {
+    if (std.builtin.os.tag != .linux) while (true) {
+        var out: Termios = undefined;
+        switch (std.os.errno(c.tcgetattr(self.tty.handle, &out))) {
+            0 => return out,
             std.os.EINTR => continue,
             std.os.ENOTTY => return error.NotATerminal,
-            else => return std.os.unexpectedErrno(errno),
+            else => |err| return std.os.unexpectedErrno(err),
         }
     };
-    self.old_settings = try std.os.tcgetattr(file.handle);
+    return std.os.tcgetattr(file.handle);
 }
 
 /// Get the current Termios struct for the given file descriptor.
 /// Caller asserts that the fd is a tty.
-pub fn tcgetattr(self: *PosixTty) error{Unexpected}!void {
-    self.tcgetattrInit() catch |err| switch (err) {
+pub fn tcgetattr(self: *PosixTty) error{Unexpected}!Termios {
+    return self.tcgetattrInit() catch |err| switch (err) {
         error.NotATerminal => unreachable,
         error.Unexpected => return err,
     };
+}
+
+/// Control when termios changes are propagated.
+pub const TCSA = if (std.builtin.os.tag == .linux)
+    std.os.TCSA
+else
+    extern enum(c_uint) {
+        /// Termios changes are propagated immediately.
+        NOW,
+        /// Termios changes are propagated after all pending output
+        /// has been written to the terminal device.
+        DRAIN,
+        /// Termios changes are propagated after all pending output
+        /// has been written to the terminal device. Additionally,
+        /// any unread input will be discarded.
+        FLUSH,
+        _,
+    };
+
+/// Update the current Termios settings to a new set of values.
+/// Caller asserts that the fd is a tty.
+pub fn tcsetattr(self: *PosixTty, optional_action: TCSA, termios: Termios) error{Unexpected,ProcessOrphaned}!void {
+    if (std.builtin.tag != .linux) while (true) {
+        switch (std.os.errno(c.tcsetattr(self.tty.handle, @enumToInt(optional_action), &termios))) {
+            0 => return,
+            std.os.EINTR => continue,
+            std.os.EIO => return error.ProcessOrphaned,
+            std.os.ENOTTY => unreachable,
+            else => |err| std.os.unexpectedErrno(err),
+        }
+    };
+    return std.os.tcsetattr(self.tty.handle, optional_action, termios);
 }
