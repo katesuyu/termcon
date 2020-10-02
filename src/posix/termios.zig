@@ -4,7 +4,6 @@
 // The MIT license requires this copyright notice to be included in all copies
 // and substantial portions of the software.
 const std = @import("std");
-const PosixTty = @import("termcon.zig").device.PosixTty;
 
 /// Import the C implementations of termios for use when linking libc.
 const c = @cImport({
@@ -12,9 +11,9 @@ const c = @cImport({
     @cInclude("sys/ioctl.h");
 });
 
-/// Use libc termios where possible because BSD and Darwin targets do not
-/// have a stable syscall interface. On Linux, `std.os` has a syscall-based
-/// Termios implementation that we use instead.
+/// Linux has a syscall-based Termios implementation in stdlib, but
+/// has no implementation for BSDs or Darwin. Those operating systems
+/// require libc anyway, so we use the libc Termios on these targets.
 pub const Termios = if (std.os.builtin.tag == .linux) std.os.termios else c.termios;
 
 /// Get the current Termios struct for the given file descriptor.

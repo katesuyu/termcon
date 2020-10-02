@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: 0BSD
 comptime {
-    @import("std").meta.refAllDecls(@import("termcon.zig"));
+    _ = @import("termcon.zig");
+    _ = @import("style.zig");
+    _ = @import("posix.zig");
+    _ = @import("posix/termios.zig");
 }
